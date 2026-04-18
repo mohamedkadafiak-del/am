@@ -1,16 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Ambulance, LogOut, User as UserIcon } from 'lucide-react';
+import { Play, LogOut, User as UserIcon } from 'lucide-react';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
 
   return (
     <nav className="glass fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center">
-      <Link to="/" className="flex items-center gap-2 text-xl font-bold text-red-500">
-        <Ambulance size={28} />
-        <span>LifeLine</span>
+      <Link to="/" className="flex items-center gap-2 text-xl font-bold text-red-600">
+        <Play size={28} fill="currentColor" />
+        <span className="tracking-tighter uppercase font-black">CineStream AI</span>
       </Link>
 
       <div className="flex items-center gap-6">
