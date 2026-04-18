@@ -6,7 +6,19 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   phone: { type: String, required: true },
-  role: { type: String, default: 'user' },
+  role: { type: String, enum: ['user', 'guardian', 'admin'], default: 'user' },
+  location: {
+    lat: { type: Number, default: 0 },
+    lng: { type: Number, default: 0 }
+  },
+  emergencyContacts: [
+    {
+      name: String,
+      phone: String,
+      relationship: String
+    }
+  ],
+  safetyStatus: { type: String, enum: ['safe', 'unsafe', 'emergency'], default: 'safe' },
   createdAt: { type: Date, default: Date.now }
 });
 

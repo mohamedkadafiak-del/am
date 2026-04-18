@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const Driver = require('../models/Driver');
 
 const protect = async (req, res, next) => {
   let token;
@@ -9,12 +8,14 @@ const protect = async (req, res, next) => {
       token = req.headers.authorization.split(' ')[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret123');
 
-      if (decoded.role === 'user') {
-        req.user = await User.findById(decoded.id).select('-password');
-      } else if (decoded.role === 'driver') {
-        req.user = await Driver.findById(decoded.id).select('-password');
-      } else if (decoded.role === 'admin') {
+      if (decoded.role === 'admin') {
         req.user = { id: 'admin_id', role: 'admin' };
+      } else {
+        req.user = await User.findById(decoded.id).select('-password');
+      }
+
+      if (!req.user) {
+        return res.status(401).json({ message: 'Not authorized, user not found' });
       }
 
       next();
