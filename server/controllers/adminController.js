@@ -1,20 +1,39 @@
+const Movie = require('../models/Movie');
 const User = require('../models/User');
-const Driver = require('../models/Driver');
-const Booking = require('../models/Booking');
+
+exports.uploadMovie = async (req, res) => {
+  try {
+    const { title, description, videoUrl, thumbnail, genre, mood, duration } = req.body;
+    const movie = await Movie.create({
+      title,
+      description,
+      videoUrl,
+      thumbnail,
+      genre,
+      mood,
+      duration
+    });
+    res.status(201).json(movie);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 exports.getAnalytics = async (req, res) => {
   try {
-    const totalBookings = await Booking.countDocuments();
-    const activeDrivers = await Driver.countDocuments({ status: 'available' });
-    const completedTrips = await Booking.countDocuments({ status: 'completed' });
+    const totalMovies = await Movie.countDocuments();
     const totalUsers = await User.countDocuments();
+    const trendingMovies = await Movie.find({ isTrending: true }).limit(5);
 
-    res.json({
-      totalBookings,
-      activeDrivers,
-      completedTrips,
-      totalUsers
-    });
+    // Mock analytics for views and watch time
+    const analytics = {
+      totalMovies,
+      totalUsers,
+      totalViews: await Movie.aggregate([{ $group: { _id: null, total: { $sum: "$views" } } }]),
+      trendingMovies
+    };
+
+    res.json(analytics);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -24,41 +43,6 @@ exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select('-password');
     res.json(users);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-exports.getAllDrivers = async (req, res) => {
-  try {
-    const drivers = await Driver.find().select('-password');
-    res.json(drivers);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-exports.approveDriver = async (req, res) => {
-  try {
-    const driver = await Driver.findByIdAndUpdate(req.params.id, { isApproved: true }, { new: true });
-    res.json(driver);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-exports.manageBooking = async (req, res) => {
-  try {
-    const { action } = req.body; // 'cancel' or 'assign'
-    const booking = await Booking.findById(req.params.id);
-    if (!booking) return res.status(404).json({ message: 'Booking not found' });
-
-    if (action === 'cancel') {
-      booking.status = 'cancelled';
-    }
-
-    await booking.save();
-    res.json(booking);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

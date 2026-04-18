@@ -1,15 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { getAnalytics, getAllUsers, getAllDrivers, approveDriver, manageBooking } = require('../controllers/adminController');
-const { protect, authorize } = require('../middleware/authMiddleware');
+const adminController = require('../controllers/adminController');
+const { protect, admin } = require('../middleware/authMiddleware');
 
-router.use(protect);
-router.use(authorize('admin'));
-
-router.get('/analytics', getAnalytics);
-router.get('/users', getAllUsers);
-router.get('/drivers', getAllDrivers);
-router.put('/drivers/approve/:id', approveDriver);
-router.put('/bookings/:id', manageBooking);
+router.post('/upload', protect, admin, adminController.uploadMovie);
+router.get('/analytics', protect, admin, adminController.getAnalytics);
+router.get('/users', protect, admin, adminController.getAllUsers);
 
 module.exports = router;
