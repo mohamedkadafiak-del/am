@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { LocationProvider } from './context/LocationContext';
 import Navbar from './components/Navbar';
 import BottomNav from './components/BottomNav';
 import Login from './pages/Login';
@@ -9,6 +10,7 @@ import UserDashboard from './pages/UserDashboard';
 import GuardianDashboard from './pages/GuardianDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import LandingPage from './pages/LandingPage';
+import Profile from './pages/Profile';
 import SOSButton from './components/SOSButton';
 import AIChat from './components/AIChat';
 import FakeCall from './components/FakeCall';
@@ -95,39 +97,47 @@ const GlobalSafetyUI = () => {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <div className="min-h-screen bg-background text-slate-100 font-inter">
-          <Navbar />
-          <GlobalSafetyUI />
-          <main className="pb-24 md:pb-0">
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/secure-admin-portal" element={<Login role="admin" />} />
-              <Route path="/register" element={<Register />} />
+      <LocationProvider>
+        <Router>
+          <div className="min-h-screen bg-background text-slate-100 font-inter">
+            <Navbar />
+            <GlobalSafetyUI />
+            <main className="pb-24 md:pb-0">
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/secure-admin-portal" element={<Login role="admin" />} />
+                <Route path="/register" element={<Register />} />
 
-              <Route path="/dashboard" element={
-                <PrivateRoute role="user">
-                  <UserDashboard />
-                </PrivateRoute>
-              } />
+                <Route path="/dashboard" element={
+                  <PrivateRoute role="user">
+                    <UserDashboard />
+                  </PrivateRoute>
+                } />
 
-              <Route path="/guardian-dashboard" element={
-                <PrivateRoute role="guardian">
-                  <GuardianDashboard />
-                </PrivateRoute>
-              } />
+                <Route path="/guardian-dashboard" element={
+                  <PrivateRoute role="guardian">
+                    <GuardianDashboard />
+                  </PrivateRoute>
+                } />
 
-              <Route path="/admin-dashboard" element={
-                <PrivateRoute role="admin">
-                  <AdminDashboard />
-                </PrivateRoute>
-              } />
-            </Routes>
-          </main>
-          <BottomNav />
-        </div>
-      </Router>
+                <Route path="/admin-dashboard" element={
+                  <PrivateRoute role="admin">
+                    <AdminDashboard />
+                  </PrivateRoute>
+                } />
+
+                <Route path="/profile" element={
+                  <PrivateRoute>
+                    <Profile />
+                  </PrivateRoute>
+                } />
+              </Routes>
+            </main>
+            <BottomNav />
+          </div>
+        </Router>
+      </LocationProvider>
     </AuthProvider>
   );
 }

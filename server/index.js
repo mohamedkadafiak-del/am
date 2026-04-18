@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const http = require('http');
 const { Server } = require('socket.io');
 const connectDB = require('./config/db');
+const socketHandler = require('./sockets/socketHandler');
 
 const app = express();
 const server = http.createServer(app);
@@ -33,27 +34,8 @@ app.get('/', (req, res) => {
   res.send('She Shield AI API is running...');
 });
 
-// Socket.io logic
-io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
-
-  socket.on('join-room', (userId) => {
-    socket.join(userId);
-    console.log(`User ${userId} joined their room`);
-  });
-
-  socket.on('send-location', (data) => {
-    // data: { userId, location: { lat, lng }, emergency: boolean }
-    if (data.emergency) {
-      io.emit('emergency-alert', data);
-    }
-    io.emit('location-update', data);
-  });
-
-  socket.on('disconnect', () => {
-    console.log('User disconnected');
-  });
-});
+// Socket Handler
+socketHandler(io);
 
 const PORT = process.env.PORT || 5000;
 
