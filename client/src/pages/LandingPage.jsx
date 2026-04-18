@@ -1,114 +1,132 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Shield, MapPin, PhoneCall, Users, Zap, MessageSquare } from 'lucide-react';
-import Button from '../components/Button';
+import { Shield, Zap, Map as MapIcon, Users, ArrowRight, Play, CheckCircle } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 
 const LandingPage = () => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6 text-center max-w-5xl mx-auto overflow-hidden">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative"
-        >
-          {/* Decorative background glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-pink-600/10 rounded-full blur-[120px] -z-10" />
+      <section className="relative pt-40 pb-20 px-6 overflow-hidden">
+        {/* Animated Background Gradients */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10">
+            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+            <div className="absolute bottom-[10%] right-[-10%] w-[40%] h-[40%] bg-secondary/20 rounded-full blur-[120px] animate-pulse-slow" />
+        </div>
 
-          <span className="px-4 py-1.5 rounded-full bg-pink-500/10 text-pink-500 text-sm font-bold tracking-wider uppercase mb-6 inline-block border border-pink-500/20">
-            Smart Safety for Women
-          </span>
-          <h1 className="text-5xl md:text-8xl font-black mb-8 bg-gradient-to-b from-white to-slate-500 bg-clip-text text-transparent leading-[1.1]">
-            SHE SHIELD AI <br />
-            <span className="text-3xl md:text-5xl font-bold text-slate-200">Confidence In Every Step.</span>
-          </h1>
-          <p className="text-xl text-slate-400 mb-10 leading-relaxed max-w-2xl mx-auto">
-            Advanced real-time tracking, AI-powered safety scores, and instant SOS emergency systems designed to keep you safe everywhere, anytime.
-          </p>
-          <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
-            <Link to="/register?role=user">
-              <button className="bg-pink-600 hover:bg-pink-700 text-white text-lg px-10 py-4 rounded-full transition-all shadow-xl shadow-pink-600/30 font-bold">
-                Join She Shield
-              </button>
-            </Link>
-            <Link to="/register?role=guardian">
-              <button className="bg-slate-800 hover:bg-slate-700 text-white text-lg px-10 py-4 rounded-full transition-all border border-slate-700 font-bold">
-                Join as Guardian
-              </button>
-            </Link>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* Stats/Features Grid */}
-      <section className="py-20 px-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <FeatureCard
-            icon={<Zap className="text-yellow-500" />}
-            title="AI Safety Score"
-            desc="Real-time analysis of your area's safety based on crime data, time of day, and community reports."
-          />
-          <FeatureCard
-            icon={<MapPin className="text-emerald-500" />}
-            title="Safe Route Navigation"
-            desc="Navigate using the safest routes, not just the shortest, with highlights on high-risk zones."
-          />
-          <FeatureCard
-            icon={<Shield className="text-pink-500" />}
-            title="Instant SOS"
-            desc="One-tap emergency trigger that notifies guardians and nearby users with your live location."
-          />
-          <FeatureCard
-            icon={<PhoneCall className="text-blue-500" />}
-            title="Fake Call System"
-            desc="Realistic fake incoming call screen to help you exit uncomfortable or threatening situations."
-          />
-          <FeatureCard
-            icon={<MessageSquare className="text-indigo-500" />}
-            title="AI Safety Chatbot"
-            desc="Instant safety guidance and emergency protocols available 24/7 via our intelligent assistant."
-          />
-          <FeatureCard
-            icon={<Users className="text-orange-500" />}
-            title="Community Network"
-            desc="Join a network of thousands of women and guardians looking out for each other."
-          />
+        <div className="max-w-7xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-primary text-xs font-bold tracking-widest uppercase mb-8 backdrop-blur-md">
+              <span className="w-2 h-2 bg-primary rounded-full animate-ping" />
+              AI-Powered Protection 24/7
+            </span>
+            <h1 className="text-6xl md:text-8xl font-black mb-8 leading-[1.1] font-poppins">
+                Your Safety. <br />
+                <span className="bg-gradient-to-r from-primary via-secondary to-primary bg-[length:200%_auto] bg-clip-text text-transparent animate-gradient">Our Priority.</span>
+            </h1>
+            <p className="text-xl text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed font-inter">
+                Experience the next generation of women's safety with SHE SHIELD AI. Real-time tracking, predictive safety scores, and instant emergency response.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <Link to="/register?role=user" className="group relative bg-primary hover:bg-primary/90 text-white px-10 py-4 rounded-full font-bold text-lg transition-all shadow-2xl shadow-primary/30 flex items-center gap-2">
+                    Get Started Free
+                    <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <button className="flex items-center gap-3 text-white font-bold hover:text-primary transition-colors group">
+                    <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center group-hover:border-primary transition-colors">
+                        <Play size={18} fill="currentColor" />
+                    </div>
+                    Live Demo
+                </button>
+            </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-5xl mx-auto glass rounded-[3rem] p-12 md:p-20 text-center relative overflow-hidden">
-            <div className="absolute -top-24 -right-24 w-64 h-64 bg-pink-600/20 rounded-full blur-3xl" />
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to feel safer?</h2>
-            <p className="text-slate-400 mb-10 text-lg">Join the community today and take control of your safety.</p>
-            <Link to="/register">
-                <button className="bg-white text-slate-950 hover:bg-slate-200 px-12 py-4 rounded-full font-bold transition-all">
-                    Create Free Account
-                </button>
-            </Link>
+      {/* Features Grid */}
+      <section className="py-24 px-6 max-w-7xl mx-auto">
+        <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4 font-poppins">Comprehensive Safety Suite</h2>
+            <p className="text-slate-500">Built with advanced AI and community-driven data</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <FeatureCard
+                icon={<Zap className="text-yellow-500" />}
+                title="AI Safety Score"
+                desc="Real-time analysis of your area's risk level based on history and time."
+            />
+            <FeatureCard
+                icon={<MapIcon className="text-emerald-500" />}
+                title="Safe Navigation"
+                desc="Find the safest paths home, avoiding identified high-risk zones."
+            />
+            <FeatureCard
+                icon={<Shield className="text-danger" />}
+                title="SOS Emergency"
+                desc="One-tap alerts that notify guardians and local authorities instantly."
+            />
+            <FeatureCard
+                icon={<Users className="text-blue-500" />}
+                title="Community Support"
+                desc="A network of nearby users looking out for each other's safety."
+            />
+        </div>
+      </section>
+
+      {/* Live Demo Section */}
+      <section className="py-24 px-6 bg-slate-900/30">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div>
+                <h2 className="text-4xl md:text-5xl font-bold mb-8 font-poppins leading-tight">
+                    Smart Tracking for <br />
+                    <span className="text-secondary">Peace of Mind.</span>
+                </h2>
+                <div className="space-y-6">
+                    <CheckItem text="Real-time location sharing with trusted guardians" />
+                    <CheckItem text="Automatic audio recording during SOS activation" />
+                    <CheckItem text="Fake incoming call feature for quick exits" />
+                    <CheckItem text="Crowdsourced reports on area lighting and safety" />
+                </div>
+            </div>
+            <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 blur-[100px] -z-10" />
+                <div className="glass rounded-[2rem] p-4 border-white/10 shadow-2xl rotate-2">
+                    <div className="bg-background rounded-2xl h-[400px] relative overflow-hidden flex items-center justify-center">
+                        <div className="absolute inset-0 opacity-30 bg-[url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/78.9629,20.5937,5,0/800x600?access_token=none')] bg-cover" />
+                        <div className="relative z-10 text-center">
+                            <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                                <Shield size={40} className="text-primary" />
+                            </div>
+                            <div className="bg-slate-900/80 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/10">
+                                <p className="text-2xl font-bold text-white">Safety Score: 85%</p>
+                                <p className="text-sm text-safe font-medium">Currently in Safe Zone</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 border-t border-slate-900">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-2 text-xl font-bold text-pink-500">
-                <Shield size={24} />
-                <span>SHE SHIELD AI</span>
+      <footer className="py-20 px-6 border-t border-white/5">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+            <div className="flex items-center gap-2 text-2xl font-bold text-primary">
+                <Shield size={28} />
+                <span className="font-poppins text-white">SHE SHIELD AI</span>
             </div>
-            <p className="text-slate-500 text-sm">
-                &copy; 2026 She Shield AI. Empowering Women Safety.
-            </p>
-            <div className="flex gap-6 text-slate-400 text-sm">
-                <a href="#" className="hover:text-pink-500 transition-colors">Privacy Policy</a>
-                <a href="#" className="hover:text-pink-500 transition-colors">Terms of Service</a>
+            <div className="flex gap-8 text-slate-500 text-sm">
+                <a href="#" className="hover:text-primary transition-colors">Privacy</a>
+                <a href="#" className="hover:text-primary transition-colors">Terms</a>
+                <a href="#" className="hover:text-primary transition-colors">Contact</a>
                 <Link to="/secure-admin-portal" className="hover:text-white transition-colors">Admin</Link>
             </div>
+            <p className="text-slate-600 text-sm italic">Designed to save lives.</p>
         </div>
       </footer>
     </div>
@@ -117,18 +135,26 @@ const LandingPage = () => {
 
 const FeatureCard = ({ icon, title, desc }) => (
     <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
+        whileHover={{ y: -10 }}
+        className="group"
     >
-        <GlassCard hover className="h-full border-slate-800/50">
-            <div className="bg-slate-800/50 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
-                {React.cloneElement(icon, { size: 28 })}
+        <div className="glass h-full p-8 rounded-[2rem] border-white/5 hover:border-primary/50 transition-all hover:glow-purple">
+            <div className="bg-slate-800/50 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-inner group-hover:bg-primary/20 transition-colors">
+                {React.cloneElement(icon, { size: 32 })}
             </div>
-            <h3 className="text-2xl font-bold mb-3">{title}</h3>
-            <p className="text-slate-400 leading-relaxed">{desc}</p>
-        </GlassCard>
+            <h3 className="text-2xl font-bold mb-3 font-poppins">{title}</h3>
+            <p className="text-slate-500 leading-relaxed font-inter">{desc}</p>
+        </div>
     </motion.div>
+);
+
+const CheckItem = ({ text }) => (
+    <div className="flex items-center gap-4">
+        <div className="bg-safe/10 p-1 rounded-full text-safe">
+            <CheckCircle size={20} />
+        </div>
+        <span className="text-slate-300 font-medium">{text}</span>
+    </div>
 );
 
 export default LandingPage;

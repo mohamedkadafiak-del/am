@@ -7,22 +7,31 @@ export default {
   theme: {
     extend: {
       colors: {
-        pink: {
-          50: '#fdf2f8',
-          100: '#fce7f3',
-          200: '#fbcfe8',
-          300: '#f9a8d4',
-          400: '#f472b6',
-          500: '#ec4899',
-          600: '#db2777',
-          700: '#be185d',
-          800: '#9d174d',
-          900: '#831843',
-          950: '#500724',
-        },
+        primary: '#7C3AED',
+        secondary: '#EC4899',
+        danger: '#EF4444',
+        safe: '#22C55E',
+        background: '#0F172A',
+        card: '#1E293B',
+        accent: '#F8FAFC',
+      },
+      fontFamily: {
+        poppins: ['Poppins', 'sans-serif'],
+        inter: ['Inter', 'sans-serif'],
       },
       animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'pulse-blue': 'pulse-blue 2s infinite',
+        'ripple': 'ripple 1.5s linear infinite',
+      },
+      keyframes: {
+        'pulse-blue': {
+          '0%, 100%': { transform: 'scale(1)', opacity: '1', boxShadow: '0 0 0 0 rgba(59, 130, 246, 0.7)' },
+          '50%': { transform: 'scale(1.1)', opacity: '0.8', boxShadow: '0 0 0 10px rgba(59, 130, 246, 0)' },
+        },
+        'ripple': {
+          '0%': { transform: 'scale(0)', opacity: '1' },
+          '100%': { transform: 'scale(4)', opacity: '0' },
+        }
       }
     },
   },

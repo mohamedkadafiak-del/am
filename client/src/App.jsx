@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import BottomNav from './components/BottomNav';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import UserDashboard from './pages/UserDashboard';
@@ -55,18 +56,17 @@ const GlobalSafetyUI = () => {
       });
       socket.emit('send-location', { userId: user._id, location: loc, emergency: true });
 
-      // Audio Recording logic
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         const mediaRecorder = new MediaRecorder(stream);
         mediaRecorder.start();
-        setTimeout(() => mediaRecorder.stop(), 10000); // Record for 10 seconds
+        setTimeout(() => mediaRecorder.stop(), 10000);
         console.log("Emergency audio recording started...");
       } catch (err) {
         console.error("Audio recording failed:", err);
       }
 
-      alert('SOS Alert Sent! Emergency contacts and nearby users have been notified via She Shield Network.');
+      alert('SOS Alert Sent! Emergency contacts and nearby users have been notified.');
     } catch (err) {
       console.error(err);
     }
@@ -78,7 +78,7 @@ const GlobalSafetyUI = () => {
     <>
       <SOSButton onTrigger={handleSOS} />
       <AIChat />
-      <div className="fixed bottom-48 right-8 z-40">
+      <div className="fixed bottom-48 right-8 z-40 hidden md:block">
         <button
           onClick={() => setIsFakeCallOpen(true)}
           className="w-14 h-14 bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center shadow-xl text-pink-500 hover:bg-slate-700 transition-colors"
@@ -96,10 +96,10 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen bg-slate-950 text-slate-100">
+        <div className="min-h-screen bg-background text-slate-100 font-inter">
           <Navbar />
           <GlobalSafetyUI />
-          <main>
+          <main className="pb-24 md:pb-0">
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<Login />} />
@@ -125,6 +125,7 @@ function App() {
               } />
             </Routes>
           </main>
+          <BottomNav />
         </div>
       </Router>
     </AuthProvider>
