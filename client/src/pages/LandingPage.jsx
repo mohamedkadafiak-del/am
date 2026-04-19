@@ -1,23 +1,46 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Shield, Zap, Map as MapIcon, Users, ArrowRight, Play, CheckCircle, Smartphone, Lock, Globe } from 'lucide-react';
+import { Shield, Zap, Map as MapIcon, Users, ArrowRight, Play, CheckCircle, Smartphone, Lock, Globe, ChevronDown } from 'lucide-react';
 import CountUp from '../components/CountUp';
 
 const LandingPage = () => {
-  const [safetyText, setSafetyText] = useState('');
-  const fullText = "Scanning your area... Safety Score: 85%";
-  const mouseRef = useRef({ x: 0, y: 0 });
-  const cursorX = useSpring(0, { damping: 20, stiffness: 100 });
-  const cursorY = useSpring(0, { damping: 20, stiffness: 100 });
+  const [textIndex, setTextIndex] = useState(0);
+  const [displayText, setDisplayText] = useState('');
+  const phrases = ["Scanning your area...", "Analyzing risk...", "Safety Score: 85%"];
+
+  const cursorX = useSpring(0, { damping: 25, stiffness: 120 });
+  const cursorY = useSpring(0, { damping: 25, stiffness: 120 });
 
   useEffect(() => {
+    let currentPhrase = phrases[textIndex];
     let i = 0;
-    const interval = setInterval(() => {
-      setSafetyText(fullText.slice(0, i));
-      i++;
-      if (i > fullText.length) clearInterval(interval);
-    }, 80);
+    let isDeleting = false;
+    let timer;
+
+    const handleTyping = () => {
+      if (!isDeleting) {
+        setDisplayText(currentPhrase.slice(0, i + 1));
+        i++;
+        if (i === currentPhrase.length) {
+          isDeleting = true;
+          timer = setTimeout(handleTyping, 2000);
+        } else {
+          timer = setTimeout(handleTyping, 100);
+        }
+      } else {
+        setDisplayText(currentPhrase.slice(0, i - 1));
+        i--;
+        if (i === 0) {
+          isDeleting = false;
+          setTextIndex((prev) => (prev + 1) % phrases.length);
+        } else {
+          timer = setTimeout(handleTyping, 50);
+        }
+      }
+    };
+
+    timer = setTimeout(handleTyping, 500);
 
     const handleMouseMove = (e) => {
         cursorX.set(e.clientX);
@@ -26,33 +49,55 @@ const LandingPage = () => {
     window.addEventListener('mousemove', handleMouseMove);
 
     return () => {
-        clearInterval(interval);
+        clearTimeout(timer);
         window.removeEventListener('mousemove', handleMouseMove);
     };
-  }, []);
+  }, [textIndex]);
 
   return (
-    <div className="min-h-screen bg-background cursor-none">
+    <div className="min-h-screen bg-background cursor-none overflow-x-hidden">
       {/* Premium Cursor Glow */}
       <motion.div
         style={{ x: cursorX, y: cursorY, translateX: '-50%', translateY: '-50%' }}
-        className="fixed top-0 left-0 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[100px] pointer-events-none z-[9999] hidden md:block"
+        className="fixed top-0 left-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none z-[9999] hidden md:block"
       />
 
       {/* Hero Section */}
-      <section className="relative pt-40 pb-32 px-6 overflow-hidden min-h-screen flex items-center">
-        {/* Floating Particles Mockup */}
+      <section className="relative pt-40 pb-32 px-6 min-h-screen flex items-center justify-center">
+        {/* Animated Background Gradients */}
+        <div className="absolute inset-0 -z-10">
+            <motion.div
+                animate={{
+                    scale: [1, 1.2, 1],
+                    x: [0, 50, 0],
+                    y: [0, 30, 0]
+                }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-primary/10 rounded-full blur-[150px]"
+            />
+            <motion.div
+                animate={{
+                    scale: [1.2, 1, 1.2],
+                    x: [0, -50, 0],
+                    y: [0, -30, 0]
+                }}
+                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-secondary/10 rounded-full blur-[150px]"
+            />
+        </div>
+
+        {/* Floating Particles */}
         <div className="absolute inset-0 -z-10 pointer-events-none">
-            {[...Array(20)].map((_, i) => (
+            {[...Array(30)].map((_, i) => (
                 <motion.div
                     key={i}
                     animate={{
-                        y: [0, -100, 0],
-                        x: [0, Math.random() * 50 - 25, 0],
-                        opacity: [0.1, 0.3, 0.1]
+                        y: [0, -150, 0],
+                        opacity: [0, 0.4, 0],
+                        scale: [0, 1, 0]
                     }}
                     transition={{
-                        duration: 10 + Math.random() * 10,
+                        duration: 8 + Math.random() * 12,
                         repeat: Infinity,
                         delay: Math.random() * 5
                     }}
@@ -60,160 +105,122 @@ const LandingPage = () => {
                         top: `${Math.random() * 100}%`,
                         left: `${Math.random() * 100}%`,
                     }}
-                    className="absolute w-1 h-1 bg-white rounded-full"
+                    className="absolute w-1.5 h-1.5 bg-primary/40 rounded-full"
                 />
             ))}
         </div>
 
-        <div className="max-w-7xl mx-auto w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div className="max-w-7xl mx-auto w-full relative z-10">
+          <div className="text-center">
             <motion.div
-                initial={{ opacity: 0, y: 50 }}
+                initial={{ opacity: 0, y: 80 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
             >
                 <motion.span
-                    initial={{ opacity: 0, scale: 0.9 }}
+                    initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-primary text-xs font-bold tracking-widest uppercase mb-8 backdrop-blur-md"
+                    transition={{ delay: 0.5 }}
+                    className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/5 border border-white/10 text-primary text-xs font-black tracking-[0.3em] uppercase mb-10 backdrop-blur-xl shadow-2xl"
                 >
                 <span className="w-2 h-2 bg-primary rounded-full animate-ping" />
-                Stay Safe. Stay Smart.
+                Neural Safety Shield Active
                 </motion.span>
-                <h1 className="text-6xl md:text-8xl font-black mb-8 leading-[1.05] font-poppins text-white">
-                    Protecting <br />
-                    <span className="bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent italic">Every Step.</span>
+
+                <h1 className="text-6xl md:text-9xl font-black mb-8 leading-[1] font-poppins text-white tracking-tighter">
+                    Confidence <br />
+                    <span className="bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent animate-gradient-x drop-shadow-[0_0_30px_rgba(124,58,237,0.3)]">In Every Step.</span>
                 </h1>
 
-                <div className="h-12 flex items-center mb-10">
-                    <p className="text-2xl font-mono text-secondary font-bold">
-                        {safetyText}<span className="animate-pulse">|</span>
+                <div className="h-16 flex items-center justify-center mb-12">
+                    <p className="text-2xl md:text-3xl font-mono text-secondary font-black tracking-tight bg-slate-900/40 px-8 py-3 rounded-2xl backdrop-blur-md border border-white/5">
+                        {displayText}<span className="animate-pulse text-white">_</span>
                     </p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-6">
-                    <Link to="/register?role=user" className="w-full sm:w-auto group relative bg-primary hover:bg-primary/90 text-white px-10 py-5 rounded-full font-bold text-lg transition-all shadow-2xl shadow-primary/30 flex items-center justify-center gap-2 overflow-hidden">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1 }}
+                    className="flex flex-col sm:flex-row items-center justify-center gap-8"
+                >
+                    <Link to="/register?role=user" className="w-full sm:w-auto group relative bg-primary hover:bg-primary/90 text-white px-12 py-6 rounded-full font-black text-xl transition-all shadow-[0_0_40px_rgba(124,58,237,0.4)] flex items-center justify-center gap-3 overflow-hidden">
                         <motion.div
                             className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"
                         />
-                        <span className="relative z-10">Get Started Free</span>
-                        <ArrowRight size={20} className="relative z-10 group-hover:translate-x-1 transition-transform" />
+                        <span className="relative z-10">Get Protected Now</span>
+                        <ArrowRight size={24} className="relative z-10 group-hover:translate-x-2 transition-transform" />
                     </Link>
-                    <button className="flex items-center gap-3 text-white font-bold hover:text-primary transition-colors group">
-                        <motion.div
-                            whileHover={{ scale: 1.1, rotate: 10 }}
-                            className="w-14 h-14 rounded-full border border-white/20 flex items-center justify-center group-hover:border-primary transition-colors bg-white/5 backdrop-blur-sm"
-                        >
-                            <Play size={20} fill="currentColor" />
-                        </motion.div>
-                        Watch Demo
-                    </button>
-                </div>
-            </motion.div>
 
-            <motion.div
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 1, delay: 0.2 }}
-                className="relative hidden lg:block"
-            >
-                <div className="absolute inset-0 bg-primary/20 blur-[120px] rounded-full animate-pulse" />
-                <div className="glass p-2 rounded-[3.5rem] border-white/10 shadow-2xl relative z-10 overflow-hidden">
-                    <motion.img
+                    <motion.button
                         whileHover={{ scale: 1.05 }}
-                        src="https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&q=80&w=800"
-                        alt="Security Visualization"
-                        className="rounded-[3rem] grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-1000 cursor-pointer"
-                    />
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center px-8">
-                        <motion.div
-                            animate={{ y: [0, -20, 0] }}
-                            transition={{ repeat: Infinity, duration: 4 }}
-                            className="glass p-8 rounded-[2.5rem] border-primary/30 shadow-2xl backdrop-blur-2xl"
-                        >
-                            <Shield size={64} className="text-primary mx-auto mb-4 drop-shadow-[0_0_15px_rgba(124,58,237,0.5)]" />
-                            <p className="text-2xl font-black text-white font-poppins">SHIELD ACTIVE</p>
-                            <p className="text-xs text-slate-400 font-bold tracking-widest uppercase mt-2">Neural Guard Monitoring</p>
-                        </motion.div>
-                    </div>
-                </div>
+                        whileTap={{ scale: 0.95 }}
+                        className="flex items-center gap-4 text-white font-black text-lg group bg-white/5 px-8 py-5 rounded-full border border-white/10 hover:border-primary/50 transition-all backdrop-blur-md"
+                    >
+                        <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center group-hover:bg-primary transition-colors">
+                            <Play size={20} fill="currentColor" />
+                        </div>
+                        Watch Intro
+                    </motion.button>
+                </motion.div>
             </motion.div>
           </div>
         </div>
+
+        {/* Smooth Scroll Indicator */}
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, y: [0, 10, 0] }}
+            transition={{ delay: 2, duration: 2, repeat: Infinity }}
+            className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-slate-500 font-bold uppercase tracking-[0.3em] text-[10px]"
+        >
+            <span>Scroll</span>
+            <ChevronDown size={20} />
+        </motion.div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-24 border-y border-white/5 bg-slate-900/50 backdrop-blur-lg">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-12">
-            <StatItem count="50K+" label="Active Users" />
-            <StatItem count="12K+" label="Emergency Alerts" />
-            <StatItem count="98%" label="Safety Index" />
-            <StatItem count="24/7" label="AI Monitoring" />
-        </div>
-      </section>
-
-      {/* Feature Cards Section */}
-      <section className="py-32 px-6 max-w-7xl mx-auto">
-        <div className="text-center mb-24">
-            <motion.h2
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="text-4xl md:text-7xl font-black mb-6 font-poppins"
-            >
-                Future of Safety. <br />
-                <span className="text-slate-500">Available Today.</span>
-            </motion.h2>
-        </div>
+      {/* Feature Grid with Cinematic Scroll Reveal */}
+      <section className="py-40 px-6 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
             <FeatureCard
                 icon={<Smartphone />}
                 title="Instant SOS"
-                desc="One-tap trigger that instantly notifies guardians, authorities, and nearby She Shield users."
+                desc="One-tap trigger that instantly notifies guardians, authorities, and nearby users with high-intensity alerts."
                 delay={0}
             />
             <FeatureCard
                 icon={<Globe />}
-                title="Safety Heatmaps"
-                desc="Visualize unsafe zones in real-time based on live reports and historical crime data analysis."
-                delay={0.1}
+                title="AI Heatmaps"
+                desc="Advanced neural analysis of area safety based on real-time crowdsourced reports and crime data."
+                delay={0.2}
             />
             <FeatureCard
                 icon={<Lock />}
-                title="Secure Network"
-                desc="End-to-end encrypted location sharing ensures your data is only visible to people you trust."
-                delay={0.2}
+                title="Neural Shield"
+                desc="End-to-end military-grade encryption for all location and emergency communication data."
+                delay={0.4}
             />
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-32 px-6">
+      <section className="py-40 px-6">
         <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, y: 100 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="max-w-6xl mx-auto glass rounded-[5rem] p-16 md:p-32 text-center relative overflow-hidden group border-white/10"
+            className="max-w-6xl mx-auto glass rounded-[5rem] p-20 md:p-32 text-center relative overflow-hidden group border-white/5"
         >
-            <motion.div
-                animate={{
-                    scale: [1, 1.2, 1],
-                    opacity: [0.1, 0.2, 0.1]
-                }}
-                transition={{ repeat: Infinity, duration: 5 }}
-                className="absolute inset-0 bg-gradient-to-br from-primary via-transparent to-secondary group-hover:opacity-100 transition-opacity"
-            />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-secondary/20 group-hover:scale-110 transition-transform duration-1000" />
             <div className="relative z-10">
-                <h2 className="text-5xl md:text-8xl font-black mb-8 font-poppins leading-[1.1]">The Only Shield <br /> You Need.</h2>
-                <p className="text-xl text-slate-400 mb-16 max-w-2xl mx-auto font-medium">Join over 50,000 women who trust SHE SHIELD AI for their daily safety and peace of mind.</p>
+                <h2 className="text-5xl md:text-8xl font-black mb-10 font-poppins leading-tight">Ready to feel <br /> truly safe?</h2>
                 <Link to="/register">
                     <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="bg-white text-background hover:shadow-[0_0_50px_rgba(255,255,255,0.3)] px-16 py-6 rounded-full font-black text-2xl transition-all"
+                        whileHover={{ scale: 1.1, boxShadow: "0 0 50px rgba(255,255,255,0.2)" }}
+                        whileTap={{ scale: 0.9 }}
+                        className="bg-white text-background px-16 py-7 rounded-full font-black text-2xl transition-all"
                     >
-                        Secure Your Future
+                        Create Your Free Account
                     </motion.button>
                 </Link>
             </div>
@@ -227,13 +234,12 @@ const LandingPage = () => {
                 <Shield size={40} className="text-primary fill-primary/10" />
                 <span className="font-poppins tracking-tighter">SHE SHIELD <span className="text-secondary">AI</span></span>
             </div>
-            <div className="flex flex-wrap justify-center gap-12 text-slate-500 font-bold text-sm">
-                <a href="#" className="hover:text-primary transition-colors">Emergency</a>
-                <a href="#" className="hover:text-primary transition-colors">Guardians</a>
+            <div className="flex flex-wrap justify-center gap-12 text-slate-500 font-bold text-sm uppercase tracking-widest">
                 <a href="#" className="hover:text-primary transition-colors">Privacy</a>
+                <a href="#" className="hover:text-primary transition-colors">Terms</a>
                 <Link to="/secure-admin-portal" className="hover:text-white transition-colors underline decoration-secondary underline-offset-8">Admin Portal</Link>
             </div>
-            <p className="text-slate-600 text-sm font-bold uppercase tracking-widest">© 2026 SHE SHIELD AI</p>
+            <p className="text-slate-600 text-[10px] font-black uppercase tracking-[0.5em]">Neural Safety Engine v4.0</p>
         </div>
       </footer>
     </div>
@@ -242,17 +248,16 @@ const LandingPage = () => {
 
 const FeatureCard = ({ icon, title, desc, delay }) => (
     <motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ delay, duration: 0.6 }}
-        whileHover={{ y: -20, scale: 1.02 }}
-        className="group h-full"
+        transition={{ delay, duration: 0.8 }}
+        whileHover={{ y: -20 }}
+        className="group"
     >
-        <div className="glass h-full p-12 rounded-[4rem] border-white/5 hover:border-primary/50 transition-all hover:shadow-[0_0_60px_rgba(124,58,237,0.15)] relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-primary/20 transition-all" />
-            <div className="bg-slate-800/50 w-24 h-24 rounded-[2rem] flex items-center justify-center mb-10 shadow-inner group-hover:bg-primary/20 transition-all rotate-3 group-hover:rotate-0">
-                {React.cloneElement(icon, { size: 40, className: "text-primary group-hover:text-white transition-colors" })}
+        <div className="glass h-full p-12 rounded-[4rem] border-white/5 hover:border-primary/40 transition-all hover:shadow-[0_0_80px_rgba(124,58,237,0.2)] relative overflow-hidden bg-slate-900/20">
+            <div className="bg-slate-800/50 w-24 h-24 rounded-3xl flex items-center justify-center mb-10 shadow-inner group-hover:bg-primary/20 transition-all group-hover:rotate-6">
+                {React.cloneElement(icon, { size: 44, className: "text-primary group-hover:text-white transition-colors" })}
             </div>
             <h3 className="text-3xl font-black mb-4 font-poppins">{title}</h3>
             <p className="text-slate-500 leading-relaxed font-inter font-medium text-lg">{desc}</p>
@@ -262,10 +267,10 @@ const FeatureCard = ({ icon, title, desc, delay }) => (
 
 const StatItem = ({ count, label }) => (
     <div className="text-center">
-        <h4 className="text-4xl md:text-6xl font-black text-white mb-3 font-poppins">
+        <h4 className="text-4xl md:text-6xl font-black text-white mb-3 font-poppins tracking-tighter">
             <CountUp value={count} />
         </h4>
-        <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-[10px]">{label}</p>
+        <p className="text-slate-500 font-bold uppercase tracking-[0.3em] text-[10px]">{label}</p>
     </div>
 );
 
