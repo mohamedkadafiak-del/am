@@ -1,149 +1,132 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import GlassCard from '../components/GlassCard';
-import Button from '../components/Button';
-import { Users, Ambulance, CheckCircle, TrendingUp, ShieldCheck, XCircle } from 'lucide-react';
+import { Shield, Users, AlertCircle, TrendingUp, Map as MapIcon } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
-  const [analytics, setAnalytics] = useState({});
-  const [usersList, setUsersList] = useState([]);
-  const [driversList, setDriversList] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [alerts, setAlerts] = useState([]);
+  const [stats, setStats] = useState({ totalUsers: 156, activeAlerts: 0, unsafeZones: 12 });
 
   useEffect(() => {
-    fetchData();
+    fetchAlerts();
+    const interval = setInterval(fetchAlerts, 5000); // Poll for alerts
+    return () => clearInterval(interval);
   }, []);
 
-  const fetchData = async () => {
+  const fetchAlerts = async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const [anaRes, userRes, drivRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/admin/analytics', config),
-        axios.get('http://localhost:5000/api/admin/users', config),
-        axios.get('http://localhost:5000/api/admin/drivers', config)
-      ]);
-      setAnalytics(anaRes.data);
-      setUsersList(userRes.data);
-      setDriversList(drivRes.data);
-      setLoading(false);
+      const res = await axios.get('http://localhost:5000/api/alerts/active', {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      setAlerts(res.data);
+      setStats(prev => ({ ...prev, activeAlerts: res.data.length }));
     } catch (err) {
       console.error(err);
     }
   };
 
-  const approveDriver = async (id) => {
+  const resolveAlert = async (id) => {
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.put(`http://localhost:5000/api/admin/drivers/approve/${id}`, {}, config);
-      fetchData();
+      await axios.put(`http://localhost:5000/api/alerts/${id}/resolve`, {}, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      fetchAlerts();
     } catch (err) {
-      alert('Approval failed');
+      console.error(err);
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-      <h1 className="text-3xl font-bold">Admin Panel</h1>
-
-      {/* Analytics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <GlassCard className="flex items-center gap-4">
-          <div className="bg-blue-500/10 p-4 rounded-2xl text-blue-500"><Users /></div>
-          <div><p className="text-slate-400 text-sm">Total Users</p><h3 className="text-2xl font-bold">{analytics.totalUsers || 0}</h3></div>
-        </GlassCard>
-        <GlassCard className="flex items-center gap-4">
-          <div className="bg-amber-500/10 p-4 rounded-2xl text-amber-500"><TrendingUp /></div>
-          <div><p className="text-slate-400 text-sm">Total Bookings</p><h3 className="text-2xl font-bold">{analytics.totalBookings || 0}</h3></div>
-        </GlassCard>
-        <GlassCard className="flex items-center gap-4">
-          <div className="bg-emerald-500/10 p-4 rounded-2xl text-emerald-500"><Ambulance /></div>
-          <div><p className="text-slate-400 text-sm">Active Drivers</p><h3 className="text-2xl font-bold">{analytics.activeDrivers || 0}</h3></div>
-        </GlassCard>
-        <GlassCard className="flex items-center gap-4">
-          <div className="bg-rose-500/10 p-4 rounded-2xl text-rose-500"><CheckCircle /></div>
-          <div><p className="text-slate-400 text-sm">Completed</p><h3 className="text-2xl font-bold">{analytics.completedTrips || 0}</h3></div>
-        </GlassCard>
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Secure Admin Portal</h1>
+        <div className="bg-pink-600/10 text-pink-500 px-4 py-2 rounded-full border border-pink-500/20 text-sm font-medium">
+          Live Monitoring Active
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        {/* Driver Management */}
-        <GlassCard>
-          <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-            <ShieldCheck className="text-emerald-500" />
-            Driver Approvals
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="text-slate-500 border-b border-slate-800">
-                  <th className="pb-4 font-medium">Name</th>
-                  <th className="pb-4 font-medium">Vehicle</th>
-                  <th className="pb-4 font-medium">Status</th>
-                  <th className="pb-4 font-medium text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/50">
-                {driversList.map(driver => (
-                  <tr key={driver._id}>
-                    <td className="py-4">
-                      <div className="font-medium">{driver.name}</div>
-                      <div className="text-xs text-slate-500">{driver.email}</div>
-                    </td>
-                    <td className="py-4 text-sm">{driver.vehicleNumber}</td>
-                    <td className="py-4">
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold ${driver.isApproved ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
-                        {driver.isApproved ? 'Approved' : 'Pending'}
-                      </span>
-                    </td>
-                    <td className="py-4 text-right">
-                      {!driver.isApproved && (
-                        <Button variant="success" className="py-1 px-3 text-xs" onClick={() => approveDriver(driver._id)}>Approve</Button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </GlassCard>
-
-        {/* User List */}
-        <GlassCard>
-          <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-            <Users className="text-blue-500" />
-            Manage Users
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="text-slate-500 border-b border-slate-800">
-                  <th className="pb-4 font-medium">User</th>
-                  <th className="pb-4 font-medium">Phone</th>
-                  <th className="pb-4 font-medium text-right">Control</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/50">
-                {usersList.map(u => (
-                  <tr key={u._id}>
-                    <td className="py-4">
-                      <div className="font-medium">{u.name}</div>
-                      <div className="text-xs text-slate-500">{u.email}</div>
-                    </td>
-                    <td className="py-4 text-sm text-slate-400">{u.phone}</td>
-                    <td className="py-4 text-right">
-                      <button className="text-rose-500 hover:text-rose-400 transition-colors">
-                        <XCircle size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </GlassCard>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <StatCard icon={<Users />} label="Total Users" value={stats.totalUsers} color="blue" />
+        <StatCard icon={<AlertCircle />} label="Active Alerts" value={stats.activeAlerts} color="red" />
+        <StatCard icon={<MapIcon />} label="Unsafe Zones" value={stats.unsafeZones} color="yellow" />
+        <StatCard icon={<TrendingUp />} label="Safety Index" value="92%" color="green" />
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Active Alerts List */}
+        <div className="lg:col-span-1 bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+            <AlertCircle className="text-red-500" /> Recent Alerts
+          </h2>
+          <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+            {alerts.map((alert) => (
+              <div key={alert._id} className="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-bold">{alert.userId?.name}</h3>
+                  <span className="text-[10px] bg-red-500 text-white px-2 py-0.5 rounded-full uppercase">Emergency</span>
+                </div>
+                <p className="text-sm text-slate-400 mb-4">{alert.userId?.phone}</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => resolveAlert(alert._id)}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-2 rounded-lg transition-colors"
+                  >
+                    Mark Resolved
+                  </button>
+                </div>
+              </div>
+            ))}
+            {alerts.length === 0 && (
+              <div className="text-center py-10 text-slate-500">
+                No active emergency alerts.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Real-time Map Monitoring */}
+        <div className="lg:col-span-2 h-[600px] bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+          <MapContainer center={[20.5937, 78.9629]} zoom={5} style={{ height: '100%', width: '100%' }}>
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            {alerts.map(alert => (
+              <Marker key={alert._id} position={[alert.location.lat, alert.location.lng]}>
+                <Popup>
+                  <div className="text-slate-900">
+                    <p className="font-bold">{alert.userId?.name}</p>
+                    <p className="text-xs">Emergency Alert!</p>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+          </MapContainer>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const StatCard = ({ icon, label, value, color }) => {
+  const colors = {
+    blue: 'text-blue-500 bg-blue-500/10 border-blue-500/20',
+    red: 'text-red-500 bg-red-500/10 border-red-500/20',
+    yellow: 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20',
+    green: 'text-green-500 bg-green-500/10 border-green-500/20',
+  };
+
+  return (
+    <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+      <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${colors[color]}`}>
+        {React.cloneElement(icon, { size: 24 })}
+      </div>
+      <p className="text-slate-400 text-sm font-medium">{label}</p>
+      <h3 className="text-2xl font-bold mt-1">{value}</h3>
     </div>
   );
 };

@@ -1,60 +1,46 @@
 const mongoose = require('mongoose');
 const User = require('./models/User');
-const Driver = require('./models/Driver');
-const Booking = require('./models/Booking');
-const bcrypt = require('bcryptjs');
+const Report = require('./models/Report');
+const Alert = require('./models/Alert');
 
 const seedData = async () => {
   try {
-    await mongoose.connect('mongodb://localhost:27017/ambulance-system');
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/she-shield');
 
     // Clear existing data
     await User.deleteMany({});
-    await Driver.deleteMany({});
-    await Booking.deleteMany({});
+    await Report.deleteMany({});
+    await Alert.deleteMany({});
+
+    // Create Sample Admin
+    await User.create({
+      name: 'Admin Shield',
+      email: 'admin@sheshield.com',
+      password: 'admin123',
+      phone: '0000000000',
+      role: 'admin'
+    });
 
     // Create Sample User
     const user = await User.create({
-      name: 'John Patient',
-      email: 'user@example.com',
+      name: 'Jane Doe',
+      email: 'jane@example.com',
       password: 'password123',
-      phone: '1234567890'
+      phone: '1234567890',
+      role: 'user',
+      emergencyContacts: [
+        { name: 'John Doe', phone: '0987654321', relationship: 'Husband' }
+      ]
     });
 
-    // Create Sample Drivers
-    const driver1 = await Driver.create({
-      name: 'Mike Driver',
-      email: 'driver@example.com',
-      password: 'password123',
-      phone: '0987654321',
-      licenseNumber: 'LIC123',
-      vehicleNumber: 'AMB-001',
-      status: 'available',
-      isApproved: true
+    // Create Sample Reports
+    await Report.create({
+        location: { lat: 12.9716, lng: 77.5946, address: 'Central Park' },
+        description: 'Poor lighting in the north area',
+        severity: 'medium'
     });
 
-    const driver2 = await Driver.create({
-        name: 'Unapproved Driver',
-        email: 'unapproved@example.com',
-        password: 'password123',
-        phone: '1112223333',
-        licenseNumber: 'LIC456',
-        vehicleNumber: 'AMB-002',
-        status: 'offline',
-        isApproved: false
-      });
-
-    // Create Sample Booking
-    await Booking.create({
-      user: user._id,
-      driver: driver1._id,
-      pickupLocation: '123 Main St',
-      dropLocation: 'City Hospital',
-      status: 'completed',
-      fare: 500
-    });
-
-    console.log('Database Seeded!');
+    console.log('Database Seeded with SHE SHIELD AI data!');
     process.exit();
   } catch (err) {
     console.error(err);
