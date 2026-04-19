@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LocationProvider } from './context/LocationContext';
 import Navbar from './components/Navbar';
@@ -14,6 +15,7 @@ import Profile from './pages/Profile';
 import SOSButton from './components/SOSButton';
 import AIChat from './components/AIChat';
 import FakeCall from './components/FakeCall';
+import PageTransition from './components/PageTransition';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 
@@ -25,6 +27,45 @@ const PrivateRoute = ({ children, role }) => {
   if (!user) return <Navigate to="/login" />;
   if (role && user.role !== role) return <Navigate to="/" />;
   return children;
+};
+
+const AnimatedRoutes = () => {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageTransition><LandingPage /></PageTransition>} />
+        <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+        <Route path="/secure-admin-portal" element={<PageTransition><Login role="admin" /></PageTransition>} />
+        <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
+
+        <Route path="/dashboard" element={
+          <PrivateRoute role="user">
+            <PageTransition><UserDashboard /></PageTransition>
+          </PrivateRoute>
+        } />
+
+        <Route path="/guardian-dashboard" element={
+          <PrivateRoute role="guardian">
+            <PageTransition><GuardianDashboard /></PageTransition>
+          </PrivateRoute>
+        } />
+
+        <Route path="/admin-dashboard" element={
+          <PrivateRoute role="admin">
+            <PageTransition><AdminDashboard /></PageTransition>
+          </PrivateRoute>
+        } />
+
+        <Route path="/profile" element={
+          <PrivateRoute>
+            <PageTransition><Profile /></PageTransition>
+          </PrivateRoute>
+        } />
+      </Routes>
+    </AnimatePresence>
+  );
 };
 
 const GlobalSafetyUI = () => {
@@ -81,13 +122,15 @@ const GlobalSafetyUI = () => {
       <SOSButton onTrigger={handleSOS} />
       <AIChat />
       <div className="fixed bottom-48 right-8 z-40 hidden md:block">
-        <button
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => setIsFakeCallOpen(true)}
           className="w-14 h-14 bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center shadow-xl text-pink-500 hover:bg-slate-700 transition-colors"
           title="Trigger Fake Call"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-        </button>
+        </motion.button>
       </div>
       <FakeCall isOpen={isFakeCallOpen} onClose={() => setIsFakeCallOpen(false)} />
     </>
@@ -99,40 +142,11 @@ function App() {
     <AuthProvider>
       <LocationProvider>
         <Router>
-          <div className="min-h-screen bg-background text-slate-100 font-inter">
+          <div className="min-h-screen bg-background text-slate-100 font-inter scroll-smooth">
             <Navbar />
             <GlobalSafetyUI />
             <main className="pb-24 md:pb-0">
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/secure-admin-portal" element={<Login role="admin" />} />
-                <Route path="/register" element={<Register />} />
-
-                <Route path="/dashboard" element={
-                  <PrivateRoute role="user">
-                    <UserDashboard />
-                  </PrivateRoute>
-                } />
-
-                <Route path="/guardian-dashboard" element={
-                  <PrivateRoute role="guardian">
-                    <GuardianDashboard />
-                  </PrivateRoute>
-                } />
-
-                <Route path="/admin-dashboard" element={
-                  <PrivateRoute role="admin">
-                    <AdminDashboard />
-                  </PrivateRoute>
-                } />
-
-                <Route path="/profile" element={
-                  <PrivateRoute>
-                    <Profile />
-                  </PrivateRoute>
-                } />
-              </Routes>
+              <AnimatedRoutes />
             </main>
             <BottomNav />
           </div>

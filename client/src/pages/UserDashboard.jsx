@@ -5,7 +5,7 @@ import L from 'leaflet';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { Shield, AlertCircle, CheckCircle, Navigation, TrendingUp } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Fix for Leaflet default icon issues
 delete L.Icon.Default.prototype._getIconUrl;
@@ -21,6 +21,7 @@ const UserDashboard = () => {
   const [safetyScore, setSafetyScore] = useState(null);
   const [reports, setReports] = useState([]);
   const [route, setRoute] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -29,8 +30,12 @@ const UserDashboard = () => {
           const { latitude, longitude } = pos.coords;
           setLocation([latitude, longitude]);
           fetchSafetyScore(latitude, longitude);
+          setIsLoading(false);
         },
-        (err) => console.error(err),
+        (err) => {
+            console.error(err);
+            setIsLoading(false);
+        },
         { enableHighAccuracy: true }
       );
     }
@@ -70,106 +75,146 @@ const UserDashboard = () => {
     alert("Safest route calculated! Highlighting green path avoiding red zones.");
   };
 
+  if (isLoading) return <SkeletonLoader />;
+
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-            <h1 className="text-3xl font-bold font-poppins">Welcome back, {user?.name.split(' ')[0]}</h1>
-            <p className="text-slate-500">Your safety network is active and monitoring.</p>
-        </div>
+    <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="p-4 md:p-8 max-w-7xl mx-auto space-y-8"
+    >
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <motion.div
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+        >
+            <h1 className="text-4xl font-black font-poppins tracking-tight">Welcome, {user?.name.split(' ')[0]}</h1>
+            <p className="text-slate-500 font-medium mt-1">AI Guardian is currently monitoring your path.</p>
+        </motion.div>
         <div className="flex gap-4 w-full md:w-auto">
-            <button
+            <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={calculateSafeRoute}
-                className="flex-1 md:flex-none bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-2xl flex items-center justify-center gap-2 font-bold shadow-lg shadow-primary/20 transition-all"
+                className="flex-1 md:flex-none bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-2xl flex items-center justify-center gap-2 font-bold shadow-xl shadow-primary/20 transition-all"
             >
                 <Navigation size={18} /> Safe Route
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleCheckIn}
-                className="flex-1 md:flex-none bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-2xl flex items-center justify-center gap-2 font-bold transition-all"
+                className="flex-1 md:flex-none bg-slate-800 hover:bg-slate-700 text-white px-8 py-4 rounded-2xl flex items-center justify-center gap-2 font-bold transition-all border border-white/5"
             >
                 <CheckCircle size={18} className="text-safe" /> I'm Safe
-            </button>
+            </motion.button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Stats & Reports */}
         <div className="space-y-8">
-          {/* Circular Safety Score */}
-          <div className="glass p-8 rounded-[2rem] text-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl" />
-            <h3 className="text-slate-400 font-medium mb-6 flex items-center justify-center gap-2">
-                <TrendingUp size={16} /> Area Safety Score
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="glass p-8 rounded-[2.5rem] text-center relative overflow-hidden group"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/10 transition-colors" />
+            <h3 className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mb-8 flex items-center justify-center gap-2">
+                <TrendingUp size={14} className="text-primary" /> Safety Intelligence
             </h3>
 
-            <div className="relative w-48 h-48 mx-auto mb-6">
+            <div className="relative w-52 h-52 mx-auto mb-8">
                 <svg className="w-full h-full circular-progress" viewBox="0 0 100 100">
                     <circle
                         cx="50" cy="50" r="45"
-                        fill="none" stroke="currentColor" strokeWidth="8"
+                        fill="none" stroke="currentColor" strokeWidth="6"
                         className="text-slate-800"
                     />
-                    <circle
+                    <motion.circle
                         cx="50" cy="50" r="45"
-                        fill="none" stroke="currentColor" strokeWidth="8"
+                        fill="none" stroke="currentColor" strokeWidth="7"
                         strokeDasharray={283}
-                        strokeDashoffset={283 - (283 * (safetyScore?.score || 0)) / 100}
+                        initial={{ strokeDashoffset: 283 }}
+                        animate={{ strokeDashoffset: 283 - (283 * (safetyScore?.score || 0)) / 100 }}
+                        transition={{ duration: 1.5, ease: "easeOut" }}
                         strokeLinecap="round"
-                        className={`transition-all duration-1000 ${
-                            safetyScore?.status === 'Red' ? 'text-danger' :
+                        className={`transition-all ${
+                            safetyScore?.status === 'Red' ? 'text-danger shadow-[0_0_10px_red]' :
                             safetyScore?.status === 'Yellow' ? 'text-yellow-500' : 'text-safe'
                         }`}
                     />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-5xl font-black font-poppins">{safetyScore?.score || '--'}</span>
-                    <span className={`text-sm font-bold uppercase tracking-widest ${
+                    <motion.span
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="text-6xl font-black font-poppins"
+                    >
+                        {safetyScore?.score || '--'}
+                    </motion.span>
+                    <span className={`text-[10px] font-black uppercase tracking-[0.2em] mt-1 ${
                         safetyScore?.status === 'Red' ? 'text-danger' :
                         safetyScore?.status === 'Yellow' ? 'text-yellow-500' : 'text-safe'
-                    }`}>{safetyScore?.status || 'Scanning'}</span>
+                    }`}>{safetyScore?.status || 'Analyzing'}</span>
                 </div>
             </div>
 
-            <p className="text-sm text-slate-400 leading-relaxed italic">
-              "Analysis based on {safetyScore?.factors.join(' & ')}"
+            <p className="text-xs text-slate-500 font-medium px-4">
+              "Area security metrics analyzed based on history & temporal patterns."
             </p>
-          </div>
+          </motion.div>
 
-          <div className="glass p-8 rounded-[2rem]">
-            <h3 className="font-bold mb-6 flex items-center gap-2 text-danger font-poppins">
-              <AlertCircle size={20} /> Community Reports
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="glass p-8 rounded-[2.5rem] border-white/5"
+          >
+            <h3 className="font-black text-lg mb-8 flex items-center gap-3 text-danger font-poppins">
+              <AlertCircle size={22} /> Danger Reports
             </h3>
-            <div className="space-y-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-              {reports.map((report) => (
-                <div key={report._id} className="group relative pl-4 border-l-2 border-slate-700 hover:border-danger transition-colors">
-                  <p className="text-sm font-semibold text-slate-200">{report.description}</p>
-                  <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                    <span className={`w-1.5 h-1.5 rounded-full ${report.severity === 'high' ? 'bg-danger' : 'bg-yellow-500'}`} />
-                    {report.severity.toUpperCase()} SEVERITY • {new Date(report.timestamp).toLocaleTimeString()}
-                  </p>
-                </div>
-              ))}
-              {reports.length === 0 && <p className="text-sm text-slate-500 text-center py-4">No reports in your area.</p>}
+            <div className="space-y-6 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+              <AnimatePresence>
+                {reports.map((report, idx) => (
+                    <motion.div
+                        key={report._id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.1 }}
+                        className="group relative pl-5 border-l-2 border-slate-800 hover:border-danger transition-all py-1"
+                    >
+                        <p className="text-sm font-bold text-slate-200 group-hover:text-white transition-colors">{report.description}</p>
+                        <p className="text-[10px] text-slate-500 mt-2 font-bold uppercase tracking-widest flex items-center gap-2">
+                            <span className={`w-2 h-2 rounded-full ${report.severity === 'high' ? 'bg-danger shadow-[0_0_5px_red]' : 'bg-yellow-500'}`} />
+                            {report.severity} Priority • {new Date(report.timestamp).toLocaleTimeString()}
+                        </p>
+                    </motion.div>
+                ))}
+              </AnimatePresence>
+              {reports.length === 0 && <p className="text-sm text-slate-500 text-center py-8 font-medium italic">Scanning for local reports...</p>}
             </div>
-          </div>
+          </motion.div>
         </div>
 
-        {/* Center & Right Column - Map */}
-        <div className="lg:col-span-2 h-[600px] rounded-[2.5rem] overflow-hidden border border-white/5 relative shadow-2xl group">
+        <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="lg:col-span-2 h-[700px] rounded-[3rem] overflow-hidden border border-white/5 relative shadow-2xl group"
+        >
           <MapContainer center={location} zoom={13} style={{ height: '100%', width: '100%' }}>
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
-            {/* User Location Pulse Marker */}
+
             <Marker position={location} icon={L.divIcon({
                 className: 'custom-div-icon',
-                html: `<div class="w-6 h-6 bg-blue-500 rounded-full border-4 border-white animate-pulse-blue shadow-lg shadow-blue-500/50"></div>`,
+                html: `<div class="relative"><div class="absolute inset-0 bg-blue-500 rounded-full animate-ping opacity-50"></div><div class="w-6 h-6 bg-blue-500 rounded-full border-4 border-white shadow-xl relative z-10"></div></div>`,
                 iconSize: [24, 24],
                 iconAnchor: [12, 12]
             })}>
-              <Popup className="custom-popup">You are here</Popup>
+              <Popup className="custom-popup">Guardian Active: Monitoring your location</Popup>
             </Marker>
 
             <Circle
@@ -177,7 +222,7 @@ const UserDashboard = () => {
               radius={2000}
               pathOptions={{
                   fillColor: safetyScore?.status === 'Red' ? '#EF4444' : safetyScore?.status === 'Yellow' ? '#F59E0B' : '#22C55E',
-                  fillOpacity: 0.1,
+                  fillOpacity: 0.08,
                   color: 'transparent'
               }}
             />
@@ -186,26 +231,41 @@ const UserDashboard = () => {
                 <Popup>{report.description}</Popup>
               </Marker>
             ))}
-            {route && <Polyline positions={route} color="#22C55E" weight={6} opacity={0.8} dashArray="10, 10" />}
+            {route && <Polyline positions={route} color="#22C55E" weight={8} opacity={0.6} dashArray="15, 15" />}
             <MapViewUpdater center={location} />
           </MapContainer>
 
-          <div className="absolute top-6 right-6 z-[400] glass p-4 rounded-2xl text-[10px] font-bold shadow-2xl space-y-2 border-white/5">
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-safe shadow-[0_0_10px_#22C55E]" /> <span className="text-slate-300">SAFE ZONE</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-yellow-500 shadow-[0_0_10px_#F59E0B]" /> <span className="text-slate-300">MODERATE</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-danger shadow-[0_0_10px_#EF4444]" /> <span className="text-slate-300">DANGER ZONE</span>
-            </div>
+          <div className="absolute top-8 right-8 z-[400] glass p-6 rounded-3xl shadow-2xl space-y-3 border-white/10 backdrop-blur-2xl">
+            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4">Map Intelligence</h4>
+            <MapLegend color="bg-safe" label="Safe Corridor" />
+            <MapLegend color="bg-yellow-500" label="Caution Advised" />
+            <MapLegend color="bg-danger" label="High Risk Zone" pulse />
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
+
+const MapLegend = ({ color, label, pulse }) => (
+    <div className="flex items-center gap-4">
+        <div className={`w-3.5 h-3.5 rounded-full ${color} ${pulse ? 'animate-pulse shadow-[0_0_10px_red]' : ''}`} />
+        <span className="text-[11px] font-black text-slate-300 uppercase tracking-widest">{label}</span>
+    </div>
+);
+
+const SkeletonLoader = () => (
+    <div className="p-8 max-w-7xl mx-auto space-y-8 animate-pulse">
+        <div className="h-20 bg-slate-800 rounded-3xl w-1/3" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="space-y-8">
+                <div className="h-64 bg-slate-800 rounded-[2.5rem]" />
+                <div className="h-96 bg-slate-800 rounded-[2.5rem]" />
+            </div>
+            <div className="lg:col-span-2 h-[700px] bg-slate-800 rounded-[3rem]" />
+        </div>
+    </div>
+);
 
 const MapViewUpdater = ({ center }) => {
   const map = useMap();
